@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #widget {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 120px;
+            background-color: transparent;
+            border: 1px solid wheat;
+            cursor: move;
+            font-size: 18px;
+            color: white;
+            text-align: center;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="widget">00:00:00</div>
+
+    <script>
+        // Get the widget element
+        var widget = document.getElementById('widget');
+
+        // Widget position variables
+        var offset = { x: 0, y: 0 };
+        var draggable = false;
+
+        // Screen time variables
+        var start_time = 0;
+        var timer = null;
+
+        // Idle handling variables
+        var idle_threshold = 60; // Idle time threshold in seconds
+        var last_activity_time = Date.now();
+
+        // Update screen time every second
+        function updateScreenTime() {
+            if ((Date.now() - last_activity_time) > (idle_threshold * 1000)) {
+                widget.innerText = 'Idle';
+            } else {
+                var total_seconds = Math.floor((Date.now() - start_time) / 1000);
+                var hours = Math.floor(total_seconds / 3600);
+                var minutes = Math.floor((total_seconds % 3600) / 60);
+                var seconds = total_seconds % 60;
+                widget.innerText = hours.toString().padStart(2, '0') + ':' +
+                    minutes.toString().padStart(2, '0') + ':' +
+                    seconds.toString().padStart(2, '0');
+            }
+        }
+
+        // Start tracking screen time
+        function startTracking() {
+            start_time = Date.now();
+            timer = setInterval(updateScreenTime, 1000);
+        }
+
+        // Stop tracking screen time
+        function stopTracking() {
+            clearInterval(timer);
+        }
+
+        // Event listener for widget mousedown event
+        widget.addEventListener('mousedown', function (event) {
+            if (event.button === 0 && event.target === widget) {
+                draggable = true;
+                var rect = widget.getBoundingClientRect();
+                offset.x = event.clientX - rect.left;
+                offset.y = event.clientY - rect.top;
+            }
+        });
+
+        // Event listener for document mousemove event
+        document.addEventListener('mousemove', function (event) {
+            if (draggable) {
+                widget.style.left = (event.clientX - offset.x) + 'px';
+                widget.style.top = (event.clientY - offset.y) + 'px';
+            }
+        });
+
+        // Event listener for document mouseup event
+        document.addEventListener('mouseup', function (event) {
+            if (event.button === 0) {
+                draggable = false;
+            }
+        });
+
+        // Event listener for document keypress and mousemove events
+        document.addEventListener('keypress', function () {
+            last_activity_time = Date.now();
+        });
+
+        document.addEventListener('mousemove', function () {
+            last_activity_time = Date.now();
+        });
+
+        // Start tracking screen time
+        startTracking();
+    </script>
+</body>
+</html>
